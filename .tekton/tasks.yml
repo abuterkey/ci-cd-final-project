@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: cleanup
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: cleanup
+      image: alpine
+      script: |
+        #!/bin/sh
+        echo "Cleaning workspace..."
+        rm -rf $(workspaces.source.path)/*
+        echo "Workspace cleaned successfully."
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: test
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: run-tests
+      image: python:3.9-slim
+      script: |
+        #!/bin/bash
+        cd $(workspaces.source.path)
+        echo "Running unit tests..."
+        nosetests -v --with-spec --spec-color --with-coverage --cover-package=app
+        echo "Tests completed successfully."
